@@ -3,7 +3,7 @@
 
 # -*- coding: utf-8 -*
 '''
-  CUDA_VISIBLE_DEVICES=0,1  python3 train_resnet_rec_2_1228.py train 1 0.5  --use-gpu --ex-num='001-[1, 0.5]'
+  CUDA_VISIBLE_DEVICES=0,1  python3 train.py train 1 0.5  --use-gpu --ex-num='001-[1, 0.5]'
 '''
 from scipy.special import comb
 import sys
@@ -249,8 +249,7 @@ def val(model, dataloader, heatmap=False):
 
         cla_loss  = cla_criterion(cla_score, label)
         rec_loss = rec_criterion(rec_score,val_input)
-        #con_fea_loss = con_criterion(fea2,fea)
-
+      
         cla.add(cla_loss.item())
         rec.add(rec_loss.item())
 
@@ -269,7 +268,7 @@ def val(model, dataloader, heatmap=False):
 
 def val_print(**kwargs):
     opt._parse(kwargs)
-    model = getattr(models, opt.model)().eval()
+    model = getattr(densenet, opt.model)().eval()
 
     #模型所在目录
     model_path = "/model.pth"
@@ -285,13 +284,8 @@ def val_print(**kwargs):
     pat_val_dataloader = DataLoader(pat_val_data, 3, shuffle=False, num_workers=opt.num_workers)
 
     #tr_auc, tr_acc, tr_sens, tr_spec, tr_cla, tr_rec, tr_score, tr_lab = val(model, pat_train_dataloader)
-    va_auc, va_acc, va_sens, va_spec, va_cla, va_rec, va_score, va_lab = val(model, pat_val_dataloader,heatmap=False)
-    va_auc, va_acc, va_sens, va_spec, va_score, va_lab = exval(va_score)
-    #print(va_auc, va_acc, va_sens, va_spec)
-    #print(va_score.shape,va_lab.shape)
-    #print([va_score, va_lab])
-    #np.savetxt('./result20230201/bt/checkpoints_' + name + '/MDenseNet_multi'+'/84_val.csv',
-     #              np.concatenate([tr_score, tr_lab], axis=1), delimiter=',')
+    va_auc, va_acc, va_sens, va_spec, va_cla, va_rec, va_score, va_lab = val(model, pat_val_dataloader)
+
                    
     #print(str(tr_auc) + ',' + str(tr_acc) + ',' + str(tr_sens) + ',' + str(tr_spec) + ',' + '\n')
     print(str(va_auc) + ',' + str(va_acc) + ',' + str(va_sens) + ',' + str(va_spec) + ',' + '\n')
