@@ -133,7 +133,7 @@ def data_cam(i,**kwargs):
     model = nn.DataParallel(model, device_ids=opt.device_ids)
     if isinstance(model,torch.nn.DataParallel):
 		    model = model.module
-    img_path = '/media/diskF/lar/code/song/img/pic/' + i # 训练集存放路径
+    img_path = '/media/diskF/lar/code/song/img/pic/' + i 
     use_cuda = torch.cuda.is_available()
 
     img = cv2.imread(img_path, 1)
