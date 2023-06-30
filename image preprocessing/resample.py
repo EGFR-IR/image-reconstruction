@@ -1,5 +1,4 @@
 ##CUDA_VISIBLE_DEVICES=3 python3 resample_chest.py  --use-gpu
-#通过三线性插值将体积数据调整为1×1×1 mm的间距
 
 import os
 import cv2
@@ -35,7 +34,7 @@ warnings.filterwarnings("ignore")
 
 
 
-data_path = '/media/user/ct/'#nrrd数据位置
+data_path = '/media/user/ct/'
 excel_path = '/media/user/data_pro/'
 # print(os.listdir(excel_path))
 clinical = np.array(pd.read_csv(excel_path + 'data_info.csv', encoding='gb18030'))
@@ -57,12 +56,12 @@ for i in tqdm(range(len(pat_name))):
     print('name:', name_temp)
     img_temp = name_temp + '.nrrd'
     img, opt_i = nrrd.read(data_path + img_temp)
-    print("HU值：", img)
-    print("HU值2：", type(img))
+    print("HU1：", img)
+    print("HU2：", type(img))
         
     
     imgs_to_process = np.clip(img, -1024, 3071)
-    print("处理后的Hu值：", imgs_to_process.shape)
+    print("Hu_process：", imgs_to_process.shape)
     
     imgs_after_resamp, spacing_img = resample(imgs_to_process, img, spacing, [1,1,1], 3)  
     
