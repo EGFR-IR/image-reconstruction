@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-本文件夹主要用来进行肿瘤抠出，并统一resize成一个大小
-"""
 
 import os
 import cv2
@@ -24,7 +21,7 @@ excel_path = save_path
 
 
 data_crop = excel_path + 'pic_crop/'
-data_npy_crop = excel_path + 'npy_crop/' #裁剪后要用的数据
+data_npy_crop = excel_path + 'npy_crop/' 
 
 np.set_printoptions(threshold=np.inf)
 
@@ -72,7 +69,6 @@ for ii in tqdm(range(len(label_names))):
     # print(label.shape[2])
 
   
-    #读取左上和右下两个位置的坐标
     result = a[a['Name']== pat_name].index.tolist()
     # print(len(result))
     
