@@ -1,6 +1,3 @@
-#此文件主要为使用resnet50作为编码器，构建解码器，实现分类+重建辅助任务
-
-
 # -*- coding: utf-8 -*
 '''
   CUDA_VISIBLE_DEVICES=0,1  python3 train.py train 1 0.5  --use-gpu --ex-num='001-[1, 0.5]'
@@ -31,7 +28,6 @@ import cv2
 
 ###################################
 #################################################################################
-#标签平滑
 class LabelSmoothing(nn.Module):
     """NLL loss with label smoothing.
     """
@@ -42,7 +38,6 @@ class LabelSmoothing(nn.Module):
         super(LabelSmoothing, self).__init__()
         self.confidence = 1.0 - smoothing
         self.smoothing = smoothing
-        # 此处的self.smoothing即我们的epsilon平滑参数。
 
     def forward(self, x, target):
         logprobs = F.log_softmax(x, dim=-1)
@@ -53,11 +48,10 @@ class LabelSmoothing(nn.Module):
         return loss.mean()
         
         
-# 三个loss:分类，重建，一致性
-#cla_criterion = nn.CrossEntropyLoss() #分类交叉熵loss
+#cla_criterion = nn.CrossEntropyLoss() 
 cla_criterion = LabelSmoothing()
-rec_criterion = nn.MSELoss()          #重建MSE loss
-con_criterion = nn.KLDivLoss()        #一致性KL散度loss
+rec_criterion = nn.MSELoss()          
+con_criterion = nn.KLDivLoss()       
 
 a = int(sys.argv[2])
 c = int(float(sys.argv[3]))
@@ -66,7 +60,7 @@ name = 'res50+ssl_20230201'
 
 def train(**kwargs):
     opt._parse(kwargs)
-    #vis = Visualizer(opt.env, port=opt.vis_port)    #可视化
+    #vis = Visualizer(opt.env, port=opt.vis_port)    
 
     
     if not os.path.exists('./result20230201/bt/checkpoints_' + name +'/{}_multi/{}--{}--{}/'.format(opt.model, opt.ex_num, opt.lr, opt.batch_size)):
@@ -99,7 +93,6 @@ def train(**kwargs):
     loss_meter_1 = meter.AverageValueMeter()
     confusion_matrix = meter.ConfusionMeter(2)
 
-    #构建结果文件
     submit_file_name = 'results.csv'
     submit_path = './result20230201/bt/checkpoints_' + name +'/{}_multi/{}--{}--{}/'.format(opt.model, opt.ex_num, opt.lr, opt.batch_size)
     csv_file = open(submit_path + submit_file_name, 'w')
@@ -122,7 +115,6 @@ def train(**kwargs):
             
             loss_1 = cla_criterion(cla_out, label)
 
-            # 多loss整合
             loss = a * loss_1
 
           
@@ -137,15 +129,13 @@ def train(**kwargs):
 
 
             if (ii + 1) % opt.print_freq == 0:
-                # 进入debug模式
+
                 if os.path.exists(opt.debug_file):
                     import ipdb;
                     ipdb.set_trace()
 
-        # validate and visualize
         loss_cla_train = loss_meter_1.value()[0]
 
-          
         pat_train_data = dataset_npy(opt.train_data_root, opt.train_data_label, is_transform=False, train=True)
         pat_train_dataloader = DataLoader(pat_train_data, 3, shuffle=False, num_workers=opt.num_workers)
         pat_test_data = dataset_npy(opt.train_data_root, opt.train_data_label, is_transform=False, test=True)
@@ -174,7 +164,6 @@ def train(**kwargs):
                                     ',' + str(va_auc) + ',' + str(va_acc) + ',' + str(va_sens) + ',' + str(va_spec) +
                                     ',' + str(exva_auc) + ',' + str(exva_acc) + ',' + str(exva_sens) + ',' + str(exva_spec) +  '\n')
                                     
-                ##保存预测打分和金标准（测试集和验证集）
         np.savetxt('./result20230201/bt/checkpoints_' + name + '/{}_multi/{}--{}--{}/{:0>4d}_val.csv'.format(opt.model, opt.ex_num, opt.lr,
                                                                            opt.batch_size, epoch),
                    np.concatenate([va_score, va_lab], axis=1), delimiter=',')
@@ -188,7 +177,6 @@ def train(**kwargs):
         # update learning rate
         if epoch % 20 == 0 and epoch != 0:
             lr = lr * opt.lr_decay
-            # 第二种降低学习率的方法:不会有moment等信息的丢失
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr
 
@@ -202,10 +190,6 @@ def train(**kwargs):
 
 @t.no_grad()
 def val(model, dataloader, heatmap=False):
-    """
-    计算模型在验证集上的准确率等信息
-    return: 分割损失，重分割损失，重建损失，一致性损失
-    """
     if isinstance(model,t.nn.DataParallel):
         model = model.module
     model.eval()
@@ -214,7 +198,6 @@ def val(model, dataloader, heatmap=False):
     cla = meter.AverageValueMeter()
     confusion_matrix = meter.ConfusionMeter(2)
 
-    # 分类的打分和金标准
     score = np.array([]).reshape(0,1)
     lab = np.array([]).reshape(0,1)
     count = 0
@@ -226,7 +209,6 @@ def val(model, dataloader, heatmap=False):
         mask = mask.to(opt.device)
         label = label.to(opt.device)
           
-        #把预测为第一类的概率和对应标签转换成数组
         cla_score = model(val_input)
 
         pro = t.nn.functional.softmax(cla_score, dim=1)
@@ -237,7 +219,6 @@ def val(model, dataloader, heatmap=False):
         score = np.concatenate([score,cla_np],0)
         lab = np.concatenate([lab,lab_np],0)
 
-        #每个病人取平均计算混淆矩阵
         confusion_matrix.add(t.mean(pro,dim=0).view(1,2).detach(), label[0:1].type(t.LongTensor))
 
         cla_loss  = cla_criterion(cla_score, label)
@@ -262,7 +243,6 @@ def val_print(**kwargs):
     opt._parse(kwargs)
     model = getattr(densenet, opt.model)().eval()
 
-    #模型所在目录
     model_path = "/model.pth"
 
     model.load(model_path)
@@ -281,9 +261,6 @@ def val_print(**kwargs):
 
 
 def help():
-    """
-    打印帮助的信息： python file.py help
-    """
     print("""
     usage : python file.py <function> [--args=value]
     <function> := train | test | help
