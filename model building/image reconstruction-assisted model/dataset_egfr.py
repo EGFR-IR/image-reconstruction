@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*
-#CUDA_VISIBLE_DEVICES=0,1 python3 dataset_nsclc_gui.py  --use-gpu
-
 from __future__ import print_function
 import os
 import numpy as np
