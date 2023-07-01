@@ -15,20 +15,18 @@ from torch.utils.data import DataLoader
 
 import random
 
-path = '/media/diskF/lar/data/'#外部验证集标签位置
+path = '/media/diskF/lar/data/'
 
-path1 = '/media/diskF/lar/data/spilt_song/'#420数据集切片存放地址
+path1 = '/media/diskF/lar/data/spilt_song/'
 
-path2 = '/media/diskF/lar/data/'#420数据集标签位置
+path2 = '/media/diskF/lar/data/'
 
 random.seed(41)
 
 class dataset_npy(data.Dataset):
 
     def __init__(self, root, root_mask, is_transform=None, train=False, val=False, test=False, exval=False):
-        """
-        主要目标： 获取所有图片的地址，并根据训练，验证，测试，以及外部测试集划分数据
-        """
+
         self.transforms = is_transform
         self.test = test
         self.train = train
@@ -43,7 +41,7 @@ class dataset_npy(data.Dataset):
         imgs = sorted(imgs, key=lambda x: x.split('/')[-1].split('_')[-2].split('-')[-1])
         masks = sorted(masks, key=lambda x: int(x.split('/')[-1].split('_mask')[-2].split('_')[-1]))
         masks = sorted(masks, key=lambda x: x.split('/')[-1].split('_mask')[-2].split('_')[-2].split('-')[-1])    
-        # print(len(imgs))# 按照7:1:2比例划分训练，测试，验证集
+        # print(len(imgs))
                     
         train_keys =   list(np.load(path1 + 'fold_1.npy')) \
                      + list(np.load(path1 + 'fold_2.npy')) \
@@ -94,9 +92,7 @@ class dataset_npy(data.Dataset):
 
 
     def __getitem__(self, index):
-        """
-        一次返回一张图片的数据
-        """
+        
         img_path = self.imgs[index]
         mask_path = self.masks[index]
         label = self.labels[index]
@@ -115,7 +111,6 @@ class dataset_npy(data.Dataset):
         
         # print(mask.shape)
 
-        #转换为3通道
         
         # data = np.expand_dims(data, axis=2)
         data = np.concatenate((data, data, data), axis=0)
