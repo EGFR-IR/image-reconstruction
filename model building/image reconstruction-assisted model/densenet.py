@@ -1,6 +1,3 @@
-#本文件主要为vgg16_bn + 重建任务网络
-
-
 # -*- coding:utf-8 -*-
 import cv2
 import time
@@ -168,7 +165,7 @@ class MDenseNet(BasicModule):
         self.bockbone = DenseNet121()
         self.rec = SConv(1024, 128)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Sequential(    # 定义自己的分类层  
+        self.fc = nn.Sequential(   
                 #nn.Linear(1024, 1024),
                 #nn.ReLU(True),
                 #nn.Dropout(0.4)  ,            
@@ -200,7 +197,7 @@ class MDenseNet(BasicModule):
         #fea = self.fc1(dense1)
         fea = self.fc(dense1)
         #print("fea shape:",fea.shape)
-        cla_out = self.classifier(fea)# 自定义的分类部分 
+        cla_out = self.classifier(fea)
         #print("cla_out shape:",cla_out.shape)
         rec_fea = self.rec(f1)
         #print("rec_fea shape:",rec_fea.shape)  #[8, 128, 56, 56]                       
