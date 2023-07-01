@@ -1,4 +1,3 @@
-# coding:utf8
 import visdom
 import time
 import numpy as np
