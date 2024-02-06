@@ -144,7 +144,7 @@ def data_cam(i,**kwargs):
     cv2.imwrite("/media/diskF/lar/code/song/img/cam0501/{}.png".format(i),grad_cam_list[0])
 	
 if __name__ == '__main__':
-    
+    #
     image_path = '/media/diskF/lar/code/song/img/pic/'
     img_list = os.listdir(image_path)
     for i in img_list:
