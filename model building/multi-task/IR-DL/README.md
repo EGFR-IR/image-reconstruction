@@ -1,2 +1,1 @@
-IR-DL
-Resnet-Unet for EGFR mutant prediction(main task).
+IR-DL for EGFR mutant prediction(main task).
