@@ -114,18 +114,6 @@ class resnet34_Unet(nn.Module):
                 nn.Linear(256, 2)
                 )
         
-        #self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.up3 = nn.ConvTranspose2d(512, 256, 2, stride=2)#7->14
-        self.dconv_up3 = double_conv(256 + 256, 256)
-        self.up2 = nn.ConvTranspose2d(256, 128, 2, stride=2)#14->28
-        self.dconv_up2 = double_conv(128 + 128, 128)
-        self.up1 = nn.ConvTranspose2d(128, 64, 2, stride=2)#28->56
-        self.dconv_up1 = double_conv(64 + 64, 64)
-        self.up0 = nn.ConvTranspose2d(64, 64, 2, stride=2)#56->112
-        self.dconv_last = double_conv(64+64, 64)
-        self.up = nn.ConvTranspose2d(64, 64, 2, stride=2)#112->224
-        self.recon = nn.Conv2d(64, 3, 1)
-
     def _make_layer(self, block, out_channels, num_blocks, stride):
 
         # we have num_block blocks per layer, the first block
@@ -148,43 +136,8 @@ class resnet34_Unet(nn.Module):
         output = self.avg_pool(bottle)
         output = output.view(output.size(0), -1)
         output = self.fc(output)
-        #x = self.upsample(bottle)
-        x = self.up3(bottle)
-        #print(x.shape)#16, 512, 14, 14]
-        #print(conv4.shape)#16, 256, 14, 14
-        x = torch.cat([x, conv4], dim=1)
 
-        x = self.dconv_up3(x)
-        #x = self.upsample(x)
-        x = self.up2(x)
-        #print(x.shape)#16, 256, 28, 28
-        #print(conv3.shape)#16, 128, 28, 28
-        x = torch.cat([x, conv3], dim=1)
-
-        x = self.dconv_up2(x)
-        #x = self.upsample(x)
-        x = self.up1(x)
-        #print(x.shape)#[16, 128, 56, 56]
-        #print(conv2.shape)#16, 64, 56, 56
-        x = torch.cat([x, conv2], dim=1)
-
-        x = self.dconv_up1(x)
-        x = self.up0(x)
-        #x = self.upsample(x)
-        #print(x.shape)#16, 64, 112, 112
-        #print(conv1.shape)#16, 64, 112, 112
-        x = torch.cat([x,conv1],dim=1)
-        #print(x.shape)#16, 128, 112, 112
-        out = self.dconv_last(x)
-        #print(out.shape)
-        out = self.up(out)
-        #print(out.shape)
-        out = self.recon(out)
-        #print(out.shape)
-        out = nn.Sigmoid()(out)
-        #print(out.shape)#16,3,224,224
-        #print(x.shape, conv1.shape, conv2.shape, conv3.shape, bottle.shape)
-        return output,out
+        return output
 
 
 def resnet18():
